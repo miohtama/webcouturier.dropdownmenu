@@ -124,6 +124,43 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
         self.navroot_path = getNavigationRoot(context)
         self.data = Assignment(root=self.navroot_path)
 
+    def filterMenuItems(self, parent, children):
+        """
+        Filters navigation tree data for filtered menus.
+
+        Checks whether the parent folder provides menu_items
+        catalog data which contains the filtered in items id
+        of children content going into this menu.
+
+        :param parent: Menu item direct of parent folder of the children
+
+        :param children: List of menu items as navigation tree dicts
+
+        :return: Filtered list of items which actually go into this menu
+        """
+
+        if not children:
+            return children
+
+        # Poke ZCatalog brain for metu_items
+        allowed_items = parent["item"]["menu_items"]
+
+        if not allowed_items:
+            # Missing.Value
+            # Empty list
+            # or None
+            return children
+
+        filtered = []
+
+        for allowed in allowed_items:
+            for child in children:
+                # Check if catalog brain id is on the allowed items list
+                if child["item"]["id"] == allowed:
+                    filtered.append(child)
+
+        return filtered
+
     def getTabObject(self, tabUrl='', tabPath=None):
         if tabUrl == self.portal_state.navigation_root_url():
             # We are at the navigation root
@@ -177,6 +214,7 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
 
         data = buildFolderTree(tabObj, obj=tabObj, query=query,
                                strategy=strategy)
+
 
         bottomLevel = self.data.bottomLevel or self.properties.getProperty(
             'bottomLevel', 0)

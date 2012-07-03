@@ -60,3 +60,12 @@ class IDropdownMenuViewlet(Interface):
 
     def getTabObject(tabUrl=''):
         """Get the submenu tree for tab object"""
+
+
+class IDropdownMenuFiltered(Interface):
+    """ Marker interface.
+
+    Allows you to filter in/out items to the dropdown menu.
+    If any of the folder items implements this interface, only content items marked with this interface within the folder
+    are included in the menu item list.
+    """
