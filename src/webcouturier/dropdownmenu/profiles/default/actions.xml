@@ -5,7 +5,7 @@
 
  <object name="object_buttons" meta_type="CMF Action Category">
 
-  <object name="mobile_options" meta_type="CMF Action">
+  <object name="menu_settings" meta_type="CMF Action">
    <property name="title" i18n:translate="">Dropdown menu settings</property>
    <property name="description" i18n:translate="">Manage which folder items are visible in the menu</property>
    <property

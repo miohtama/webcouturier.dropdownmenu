@@ -143,7 +143,12 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
             return children
 
         # Poke ZCatalog brain for metu_items
-        allowed_items = parent["item"]["menu_items"]
+        try:
+            allowed_items = parent["item"]["menu_items"]
+        except:
+            # Migration not run
+            # menu_items index missing
+            return children
 
         if not allowed_items:
             # Missing.Value
@@ -214,7 +219,6 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
 
         data = buildFolderTree(tabObj, obj=tabObj, query=query,
                                strategy=strategy)
-
 
         bottomLevel = self.data.bottomLevel or self.properties.getProperty(
             'bottomLevel', 0)
