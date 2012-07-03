@@ -4,7 +4,7 @@ from zope.interface import implements
 
 from plone.app.layout.navigation.interfaces import INavtreeStrategy
 from plone.app.layout.navigation.navtree import buildFolderTree
-from plone.app.layout.navigation.root import getNavigationRoot
+from plone.app.layout.navigation.root import getNavigationRoot, getNavigationRootObject
 
 from Products.CMFPlone.browser.navtree import NavtreeQueryBuilder
 
@@ -22,7 +22,7 @@ from plone.memoize.ram import cache
 from plone.memoize.compress import xhtml_compress
 
 from webcouturier.dropdownmenu.browser.interfaces import IDropdownMenuViewlet
-
+from webcouturier.dropdownmenu.utils import getMenuItemIds
 
 class DropdownQueryBuilder(NavtreeQueryBuilder):
     """Build a folder tree query suitable for a dropdownmenu
@@ -124,6 +124,43 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
         self.navroot_path = getNavigationRoot(context)
         self.data = Assignment(root=self.navroot_path)
 
+        self.portal_tabs = self.filterTabs(self.portal_tabs)
+
+    def filterTabs(self, tabs):
+        """
+        Filter out portal tabs.
+        """
+
+        portal_state = getMultiAdapter((self.context, self.request),
+                                           name='plone_portal_state')
+
+        root = getNavigationRootObject(self.context, portal_state.portal())
+        allowed_items = getMenuItemIds(root)
+
+        if not allowed_items:
+            # Filter / reorder not enabled for this nav root
+            return tabs
+
+        filtered = []
+
+        for tab in tabs:
+            if tab.get("category", None):
+                # This is manually set tab in portal_tabs
+                # Never filter out
+                filtered.append(tab)
+                continue
+
+        # Reorder the remaining according to
+        # the menu item order set in the settings
+        for allowed in allowed_items:
+            for tab in tabs:
+
+                # Check if catalog brain id is on the allowed items list
+                if tab["id"] == allowed:
+                    filtered.append(tab)
+
+        return filtered
+
     def filterMenuItems(self, parent, children):
         """
         Filters navigation tree data for filtered menus.
@@ -160,6 +197,7 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
 
         for allowed in allowed_items:
             for child in children:
+
                 # Check if catalog brain id is on the allowed items list
                 if child["item"]["id"] == allowed:
                     filtered.append(child)
@@ -223,5 +261,5 @@ class DropdownMenuViewlet(common.GlobalSectionsViewlet):
         bottomLevel = self.data.bottomLevel or self.properties.getProperty(
             'bottomLevel', 0)
 
-        return self.recurse(children=data.get('children', []), level=1,
+        return self.recurse(children=data["children"], level=1,
                             bottomLevel=bottomLevel).strip()
