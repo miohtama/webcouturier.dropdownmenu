@@ -20,6 +20,12 @@ being in appropriate section. This means - no **private** objects for
 anonymouses; no objects, excluded from the navigation - exactly the same
 behavior you would expect from Site Map or navigation portlet.
 
+Menu settings
+--------------
+
+Use ``@@menu-setting`` view to configure folder specific filtering which items
+come into menu and which not.
+
 Installation
 ------------
 
